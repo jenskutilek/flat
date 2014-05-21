@@ -1,7 +1,6 @@
 
 from itertools import imap # TODO python 3: imap -> map
 from math import cos, pi, sin, sqrt
-from multiprocessing import Pool
 from random import choice, random
 from time import time
 
@@ -361,11 +360,7 @@ class scene(object):
         skyground = _vector_mul(self.sky, self.ground)
         context = (width, height, samples, accelerator, emitters,
             self.origin, up, right, forward, self.sky, skyground),
-        if multiprocessing:
-            pool = Pool(initializer=_render_initializer, initargs=context)
-            result = pool.imap(_pathtracing_row, range(height))
-        else:
-            result = imap(_pathtracing_row, range(height), context * height)
+        result = imap(_pathtracing_row, range(height), context * height)
         rows = []
         step = 0
         for y, row in enumerate(result):

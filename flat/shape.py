@@ -1,6 +1,5 @@
 
-from math import acos, ceil, cos, hypot, pi, sqrt
-from cmath import exp
+from math import acos, ceil, cos, hypot, pi, sqrt, exp
 
 from .color import spot, devicen, overprint, _default_color
 from .command import moveto, lineto, quadto, curveto, closepath
