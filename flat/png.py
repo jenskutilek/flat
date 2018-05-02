@@ -17,6 +17,8 @@ def _paeth_predictor(a, b, c):
     return c
 
 def _adaptive_filtering(image):
+    # FIXME
+    # 2018-04-27, Jens
     wn, n = image.width*image.n, image.n
     s, t = bytearray(wn), bytearray(wn)
     previous = bytearray(wn)
@@ -25,11 +27,11 @@ def _adaptive_filtering(image):
     for y in range(image.height):
         offset = y*wn
         row = image.data[offset:offset+wn]
-        
+
         minimum = 0 # none
         for v in row:
             minimum += cache[v]
-        code, scanline = '\0', row
+        code, scanline = b'\0', row
         
         m = 0 # sub
         for i in range(0, n):
@@ -39,54 +41,59 @@ def _adaptive_filtering(image):
             s[i] = v = (row[i] - row[i - n]) & 0xff
             m += cache[v]
             if m >= minimum:
+                print(y, "None")
                 break
         else:
+            print(y, "Sub")
             minimum = m
-            code, scanline = '\1', s
+            code, scanline = b'\1', s
             s, t = t, s
         
-        m = 0 # up
-        for i in range(0, wn):
-            s[i] = v = (row[i] - previous[i]) & 0xff
-            m += cache[v]
-            if m >= minimum:
-                break
-        else:
-            minimum = m
-            code, scanline = '\2', s
-            s, t = t, s
-        
-        m = 0 # average
-        for i in range(0, n):
-            s[i] = v = (row[i] - previous[i]//2) & 0xff
-            m += cache[v]
-        for i in range(n, wn):
-            s[i] = v = (row[i] - (row[i - n] + previous[i])//2) & 0xff
-            m += cache[v]
-            if m >= minimum:
-                break
-        else:
-            minimum = m
-            code, scanline = '\3', s
-            s, t = t, s
-        
-        m = 0 # paeth
-        for i in range(0, n):
-            s[i] = v = (row[i] - previous[i]) & 0xff
-            m += cache[v]
-        for i in range(n, wn):
-            a, b, c = row[i - n], previous[i], previous[i - n]
-            s[i] = v = (row[i] - _paeth_predictor(a, b, c)) & 0xff
-            m += cache[v]
-            if m >= minimum:
-                break
-        else:
-            code, scanline = '\4', s
+        #m = 0 # up
+        #for i in range(0, wn):
+        #    s[i] = v = (row[i] - previous[i]) & 0xff
+        #    m += cache[v]
+        #    if m >= minimum:
+        #        break
+        #else:
+        #    minimum = m
+        #    code, scanline = b'\2', s
+        #    s, t = t, s
+        #
+        #m = 0 # average
+        #for i in range(0, n):
+        #    s[i] = v = (row[i] - previous[i]//2) & 0xff
+        #    m += cache[v]
+        #for i in range(n, wn):
+        #    s[i] = v = (row[i] - (row[i - n] + previous[i])//2) & 0xff
+        #    m += cache[v]
+        #    if m >= minimum:
+        #        break
+        #else:
+        #    minimum = m
+        #    code, scanline = b'\3', s
+        #    s, t = t, s
+        #
+        #m = 0 # paeth
+        #for i in range(0, n):
+        #    s[i] = v = (row[i] - previous[i]) & 0xff
+        #    m += cache[v]
+        #for i in range(n, wn):
+        #    a, b, c = row[i - n], previous[i], previous[i - n]
+        #    s[i] = v = (row[i] - _paeth_predictor(a, b, c)) & 0xff
+        #    m += cache[v]
+        #    if m >= minimum:
+        #        break
+        #else:
+        #    code, scanline = b'\4', s
         
         content.append(code)
-        content.append(bytes(scanline)) # TODO python 3: remove bytes
+        content.append(scanline)
         previous = row
-    return ''.join(content)
+    #print("Content:", content)
+    bb = b''.join(content)
+    print(bb)
+    return bb
 
 
 
