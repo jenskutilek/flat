@@ -141,7 +141,7 @@ class png(object):
     
     def decompress(self):
         wn, n = self.width*self.n, self.n
-        content = bytearray(decompress(bytes(self.idat()))) # TODO python 3: remove bytearray/bytes
+        content = decompress(self.idat())
         if (wn + 1)*self.height != len(content):
             raise ValueError('Invalid content length.')
         rows = []
@@ -182,8 +182,8 @@ def serialize(image, optimized):
     if image.kind not in ('g', 'ga', 'rgb', 'rgba'):
         raise ValueError('Invalid image kind.')
     L = Struct('>L').pack # unsigned long
-    color = '\0\4\2\6'[image.n - 1]
-    ihdr = L(image.width) + L(image.height) + '\10' + color + '\0\0\0'
+    color = bytes([b'\0\4\2\6'[image.n - 1]])
+    ihdr = L(image.width) + L(image.height) + b'\10' + color + b'\0\0\0'
     if optimized:
         content = _adaptive_filtering(image)
     else:
@@ -191,15 +191,15 @@ def serialize(image, optimized):
         wn, n = image.width*image.n, image.n
         for y in range(image.height):
             offset = y*wn
-            parts.append('\0')
-            parts.append(bytes(image.data[offset:offset+wn])) # TODO python 3: remove bytes
-        content = ''.join(parts)
+            parts.append(b'\0')
+            parts.append(image.data[offset:offset+wn])
+        content = b''.join(parts)
     idat = compress(content, 9 if optimized else 6)
-    return ''.join((
-        '\x89PNG\r\n\x1a\n',
-        L(len(ihdr)), 'IHDR', ihdr, L(crc32(ihdr, crc32('IHDR')) & 0xffffffff),
-        L(len(idat)), 'IDAT', idat, L(crc32(idat, crc32('IDAT')) & 0xffffffff),
-        L(0), 'IEND', L(crc32('IEND') & 0xffffffff)))
+    return b''.join((
+        b'\x89PNG\r\n\x1a\n',
+        L(len(ihdr)), b'IHDR', ihdr, L(crc32(ihdr, crc32(b'IHDR')) & 0xffffffff),
+        L(len(idat)), b'IDAT', idat, L(crc32(idat, crc32(b'IDAT')) & 0xffffffff),
+        L(0), b'IEND', L(crc32(b'IEND') & 0xffffffff)))
 
 
 
